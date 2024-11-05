@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Web Game</title>
+</head>
+<body>
+
+    <h3>Register User</h3>
+    <form id="registerForm" onsubmit="return false;">
+        <label for="name">Name (Required):</label>
+        <input type="text" id="name" required>
+        <br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" required>
+        <br>
+        <button type="button" onclick="registerUser()">Submit</button>
+    </form>
+
+    <h3>List of Participants:</h3>
+    <ul id="participantList"></ul>
+    <button type="button" onclick="startGame()">Start</button>
+
+    <div id="gameArea" style="display:none;">
+        <h3>Score: <span id="score">0</span></h3>
+        <p id="question"></p>
+        <input type="text" id="answer">
+        <button type="button" onclick="submitAnswer()">Answer</button>
+        <p id="timer">Time left: <span id="timeLeft">5</span> seconds</p>
+    </div>
+
+    <script>
+        let users = [];
+        let score = 0;
+        let timeLeft = 5;
+        let timer;
+
+        function registerUser() {
+            const name = document.getElementById('name').value;
+            const password = document.getElementById('password').value;
+
+            if (name && password) {
+                const user = { name, password };
+                const exists = users.some(u => u.name === name);
+                
+                if (exists) {
+                    alert("User already registered!");
+                } else {
+                    users.push(user);
+                    updateParticipantList();
+                    document.getElementById('name').value = '';
+                    document.getElementById('password').value = '';
+                }
+            } else {
+                alert("Please fill in both name and password");
+            }
+        }
+
+        function updateParticipantList() {
+            const list = document.getElementById('participantList');
+            list.innerHTML = '';
+            users.forEach((user, index) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${index + 1}. ${user.name}`;
+                list.appendChild(listItem);
+            });
+        }
+
+        function startGame() {
+            const name = prompt("Enter your name to start the game:");
+            const password = prompt("Enter your password:");
+            const user = users.find(u => u.name === name && u.password === password);
+
+            if (user) {
+                alert("Game started!");
+                document.getElementById('gameArea').style.display = 'block';
+                score = 0;
+                document.getElementById('score').textContent = score;
+                startQuestion();
+            } else {
+                alert("User not registered or incorrect password!");
+            }
+        }
+
+        function startQuestion() {
+            const num1 = Math.floor(Math.random() * 10) + 1;
+            const num2 = Math.floor(Math.random() * 10) + 1;
+            const questionText = `${num1} + ${num2} = ?`;
+            document.getElementById('question').textContent = questionText;
+            document.getElementById('answer').dataset.correctAnswer = num1 + num2;
+
+            timeLeft = 5;
+            document.getElementById('timeLeft').textContent = timeLeft;
+            clearInterval(timer);
+            timer = setInterval(countdown, 1000);
+        }
+
+        function countdown() {
+            timeLeft--;
+            document.getElementById('timeLeft').textContent = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                alert("Game Over! Time ran out.");
+                document.getElementById('gameArea').style.display = 'none';
+            }
+        }
+
+        function submitAnswer() {
+            const userAnswer = parseInt(document.getElementById('answer').value);
+            const correctAnswer = parseInt(document.getElementById('answer').dataset.correctAnswer);
+
+            if (!isNaN(userAnswer) && userAnswer === correctAnswer) {
+                score += 100;
+                document.getElementById('score').textContent = score;
+                document.getElementById('answer').value = '';
+                startQuestion();
+            } else {
+                alert("Incorrect answer. Try again!");
+                document.getElementById('answer').value = '';
+            }
+        }
+    </script>
+
+</body>
+</html>
